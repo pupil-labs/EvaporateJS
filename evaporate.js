@@ -1172,8 +1172,8 @@
   };
   //see: http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html#ConstructingTheAuthenticationHeader
   SignedS3AWSRequest.prototype.authorize = function () {
+    this.request.dateString = this.signer.dateString(this.localTimeOffset);
     if (this.con.useTimeFromAPIServer===false){
-      this.request.dateString = this.signer.dateString(this.localTimeOffset);
       this.request.x_amz_headers = extend(this.request.x_amz_headers, {
         'x-amz-date': this.request.dateString
       });
@@ -1726,8 +1726,9 @@
     };
     AwsSignatureV4.prototype.credentialString = function () {
       var credParts = [];
-
-      credParts.push(this.request.dateString.slice(0, 8));
+      if (this.request.dateString){
+        credParts.push(this.request.dateString.slice(0, 8));
+      }
       credParts.push(con.awsRegion);
       credParts.push('s3');
       credParts.push('aws4_request');
