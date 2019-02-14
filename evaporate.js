@@ -1109,8 +1109,10 @@
       var url = [self.awsUrl, self.getPath(), self.request.path].join(""),
           all_headers = {};
 
+      console.log('REQUEST-METHOD: '+ self.request.method)
       if (self.request.query_string) {
         url += self.request.query_string;
+        console.log('USED-URL: '+ url)
       }
       extend(all_headers, self.request.not_signed_headers);
       extend(all_headers, self.request.x_amz_headers);
@@ -1139,6 +1141,7 @@
       for (var key in all_headers) {
         if (all_headers.hasOwnProperty(key)) {
           xhr.setRequestHeader(key, all_headers[key]);
+          console.log('USED-HEADER: ['+ key +'] : value:['+all_headers[key]+']')
         }
       }
 
@@ -1146,10 +1149,12 @@
 
       if (self.request.contentType) {
         xhr.setRequestHeader('Content-Type', self.request.contentType);
+        console.log('Content-Type: '+ self.request.contentType)
       }
 
       if (self.request.md5_digest) {
         xhr.setRequestHeader('Content-MD5', self.request.md5_digest);
+        console.log('Content-MD5: '+ self.request.md5_digest)
       }
       xhr.onerror = function (xhr) {
         var reason = xhr.responseText ? getAwsResponse(xhr) : 'transport error';
