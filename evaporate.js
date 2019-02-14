@@ -1185,15 +1185,18 @@
     else{
       return this.signer.getPayload()
       .then(function () {
-        authorizationMethod(this).authorize().then(function(auth_object){
-          var signature = auth_object.signature
-          var x_amz_date = auth_object.x_amz_date
-          this.request.dateString = x_amz_date
-          this.request.x_amz_headers = extend(this.request.x_amz_headers, {
-            'x-amz-date': this.request.dateString
+        return new Promise(function (resolve, reject) {
+          authorizationMethod(this).authorize().then(function(auth_object){
+            var signature = auth_object.signature
+            var x_amz_date = auth_object.x_amz_date
+            this.request.dateString = x_amz_date
+            this.request.x_amz_headers = extend(this.request.x_amz_headers, {
+              'x-amz-date': this.request.dateString
+            });
+            resolve(signature);
           });
-          return signature
-        });
+        })
+
 
       }.bind(this));
     }
@@ -1937,19 +1940,22 @@
     }
     AuthorizationCustom.prototype = Object.create(AuthorizationMethod.prototype);
     AuthorizationCustom.prototype.authorize = function () {
-      con.customAuthMethod(
+      return new Promise(function (resolve, reject) {
+        con.customAuthMethod(
           AuthorizationMethod.makeSignParamsObject(fileUpload.signParams),
           AuthorizationMethod.makeSignParamsObject(con.signHeaders),
           awsRequest.stringToSign(),
           request.dateString,
           awsRequest.canonicalRequest())
           .then(function(auth_object){
-            return auth_object
-          })
+            resolve(auth_object);
+          },reject)
           .catch(function (reason) {
             fileUpload.deferredCompletion.reject(reason);
             throw reason;
           });
+      })
+
 
     };
 
