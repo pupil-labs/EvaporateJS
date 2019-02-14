@@ -1935,8 +1935,8 @@
       AuthorizationMethod.call(this);
     }
     AuthorizationCustom.prototype = Object.create(AuthorizationMethod.prototype);
-    AuthorizationCustom.prototype.authorize = function () {
-      return con.customAuthMethod(
+    AuthorizationCustom.prototype.authorize = async function () {
+      let auth_object = await con.customAuthMethod(
           AuthorizationMethod.makeSignParamsObject(fileUpload.signParams),
           AuthorizationMethod.makeSignParamsObject(con.signHeaders),
           awsRequest.stringToSign(),
@@ -1946,6 +1946,7 @@
             fileUpload.deferredCompletion.reject(reason);
             throw reason;
           });
+      return auth_object
     };
 
     if (typeof con.customAuthMethod === 'function') {
