@@ -54,6 +54,7 @@
 
   var Evaporate = function (config) {
     this.config = extend({
+      userTimeFromAPIServer:false,
       readableStreams: false,
       readableStreamPartMethod: null,
       bucket: null,
@@ -1171,14 +1172,29 @@
   };
   //see: http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html#ConstructingTheAuthenticationHeader
   SignedS3AWSRequest.prototype.authorize = function () {
-    this.request.dateString = this.signer.dateString(this.localTimeOffset);
-    this.request.x_amz_headers = extend(this.request.x_amz_headers, {
-      'x-amz-date': this.request.dateString
-    });
-    return this.signer.getPayload()
-        .then(function () {
-          return authorizationMethod(this).authorize();
-        }.bind(this));
+    if (this.con.userTimeFromAPIServer===false){
+      this.request.dateString = this.signer.dateString(this.localTimeOffset);
+      this.request.x_amz_headers = extend(this.request.x_amz_headers, {
+        'x-amz-date': this.request.dateString
+      });
+      return this.signer.getPayload()
+      .then(function () {
+        return authorizationMethod(this).authorize();
+      }.bind(this));
+    }
+    else{
+      return this.signer.getPayload()
+      .then(function () {
+        var auth_object = authorizationMethod(this).authorize();
+        var signature = auth_object.signature
+        var x_amz_date = auth_object.x_amz_date
+        this.request.dateString = x_amz_date
+        this.request.x_amz_headers = extend(this.request.x_amz_headers, {
+          'x-amz-date': this.request.dateString
+        });
+        return signature
+      }.bind(this));
+    }
   };
   SignedS3AWSRequest.prototype.authorizationSuccess = function (authorization) {
     l.d(this.request.step, 'signature:', authorization);
