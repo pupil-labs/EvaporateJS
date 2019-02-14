@@ -1183,15 +1183,17 @@
       }.bind(this));
     }
     else{
+
       return this.signer.getPayload()
       .then(function () {
+        var self = this
         return new Promise(function (resolve, reject) {
-          authorizationMethod(this).authorize().then(function(auth_object){
+          authorizationMethod(self).authorize().then(function(auth_object){
             var signature = auth_object.signature
             var x_amz_date = auth_object.x_amz_date
-            this.request.dateString = x_amz_date
-            this.request.x_amz_headers = extend(this.request.x_amz_headers, {
-              'x-amz-date': this.request.dateString
+            self.request.dateString = x_amz_date
+            self.request.x_amz_headers = extend(self.request.x_amz_headers, {
+              'x-amz-date': self.request.dateString
             });
             resolve(signature);
           });
