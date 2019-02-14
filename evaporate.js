@@ -1119,13 +1119,17 @@
       extend(all_headers, self.request.x_amz_headers);
 
       xhr.onreadystatechange = function () {
+
         if (xhr.readyState === 4) {
+          console.log('SOMETHING WORKED!!!')
 
           if (self.success_status(xhr)) {
+            console.log('SOMETHING WORKED EVEN BETTER!!!')
             if (self.request.response_match &&
                 xhr.response.match(new RegExp(self.request.response_match)) === undefined) {
               reject('AWS response does not match set pattern: ' + self.request.response_match);
             } else {
+              console.log('REQUEST WAS SUCESSFULL!!!')
               resolve();
             }
           } else {
@@ -1170,6 +1174,8 @@
 
       self.getPayload()
           .then(xhr.send.bind(xhr), reject);
+          console.log('REQUEST SEND!!!')
+
 
       setTimeout(function () { // We have to delay here or Safari will hang
         self.started.resolve('request sent ' + self.request.step);
