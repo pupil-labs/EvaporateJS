@@ -1027,6 +1027,7 @@
     this.updateRequest(r);
   }
   SignedS3AWSRequest.prototype.fileUpload = undefined;
+  SignedS3AWSRequest.prototype.authHeader = undefined;
   SignedS3AWSRequest.prototype.con = undefined;
   SignedS3AWSRequest.prototype.awsUrl = undefined;
   SignedS3AWSRequest.prototype.awsHost = undefined;
@@ -1136,7 +1137,9 @@
       };
 
       xhr.open(self.request.method, url);
-      xhr.setRequestHeader('Authorization', self.signer.authorizationString());
+      xhr.setRequestHeader('Authorization',self.authHeader);
+      //xhr.setRequestHeader('Authorization', self.signer.authorizationString())
+      console.log('USED-AUTH: '+  self.authHeader)
 
       for (var key in all_headers) {
         if (all_headers.hasOwnProperty(key)) {
@@ -1196,6 +1199,7 @@
           authorizationMethod(self).authorize().then(function(auth_object){
             var signature = auth_object.signature
             var x_amz_date = auth_object.x_amz_date
+            self.authHeader = auth_object.authorization_header
             self.request.dateString = x_amz_date
             self.request.x_amz_headers = extend(self.request.x_amz_headers, {
               'x-amz-date': self.request.dateString
