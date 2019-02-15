@@ -1201,15 +1201,42 @@
       return this.signer.getPayload()
       .then(function () {
         var self = this
+        var type,upload_id,part_nr
+        if  (this instanceof InitiateMultipartUpload){
+          type = 'init_upload'
+          upload_id = null
+          part_nr = null
+        }
+        else if(this instanceof PutPart){
+          type = 'upload_part'
+          upload_id = this.fileUpload.uploadId
+          part_nr = this.partNumber
+
+        }
+        else if(this instanceof CompleteMultipartUpload){
+          type = 'finish_upload'
+          upload_id = this.fileUpload.uploadId
+          part_nr = null
+        }
+        else if(this instanceof ResumeInterruptedUpload){
+          type = 'resume_upload'
+          upload_id = this.fileUpload.uploadId
+          part_nr = null
+        }
+        else if(this instanceof DeleteMultipartUpload){
+          type = 'delete_upload'
+          upload_id = this.fileUpload.uploadId
+          part_nr = null
+        }
         return new Promise(function (resolve, reject) {
-          authorizationMethod(self).authorize().then(function(auth_object){
+          authorizationMethod(self).authorize(type,upload_id,part_nr).then(function(auth_object){
             var signature = auth_object.signature
             var x_amz_date = auth_object.x_amz_date
             self.authHeader = auth_object.authorization_header
             self.request.dateString = x_amz_date
             self.request.x_amz_headers = extend(self.request.x_amz_headers, {
               'x-amz-date': self.request.dateString
-            });
+            },reject);
             resolve(signature);
           });
         })
@@ -1233,8 +1260,8 @@
             },
             self.error.bind(self));
   };
-  SignedS3AWSRequest.prototype.send = function () {
-    this.trySend();
+  SignedS3AWSRequest.prototype.send = function (type) {
+    this.trySend(type);
     return this.awsDeferred.promise;
   };
 
@@ -1280,7 +1307,6 @@
       not_signed_headers: fileUpload.notSignedHeadersAtInitiate,
       response_match: '<UploadId>(.+)<\/UploadId>'
     };
-
     CancelableS3AWSRequest.call(this, fileUpload, request);
     this.awsKey = awsKey;
   }
@@ -1956,14 +1982,9 @@
       AuthorizationMethod.call(this);
     }
     AuthorizationCustom.prototype = Object.create(AuthorizationMethod.prototype);
-    AuthorizationCustom.prototype.authorize = function () {
+    AuthorizationCustom.prototype.authorize = function (request_type, upload_id, part_nr) {
       return new Promise(function (resolve, reject) {
-        con.customAuthMethod(
-          AuthorizationMethod.makeSignParamsObject(fileUpload.signParams),
-          AuthorizationMethod.makeSignParamsObject(con.signHeaders),
-          awsRequest.stringToSign(),
-          request.dateString,
-          awsRequest.canonicalRequest())
+        con.customAuthMethod(request_type, upload_id, part_nr)
           .then(function(auth_object){
             resolve(auth_object);
           },reject)
