@@ -1107,13 +1107,10 @@
       var xhr = new XMLHttpRequest();
       self.currentXhr = xhr;
 
-      var url = [self.awsUrl, self.getPath(), self.request.path].join(""),
-          all_headers = {};
-
-      console.log('REQUEST-METHOD: '+ self.request.method)
+      var url = [self.awsUrl, self.getPath(), self.request.path].join("")
+      var all_headers = {};
       if (self.request.query_string) {
         url += self.request.query_string;
-        console.log('USED-URL: '+ url)
       }
      extend(all_headers, self.request.not_signed_headers);
      extend(all_headers, self.request.x_amz_headers);
@@ -1126,7 +1123,6 @@
                 xhr.response.match(new RegExp(self.request.response_match)) === undefined) {
               reject('AWS response does not match set pattern: ' + self.request.response_match);
             } else {
-              console.log('INITIALIZING UPLOAD SUCESSFULL!')
               resolve();
             }
           } else {
@@ -1148,32 +1144,6 @@
 
       xhr.setRequestHeader('x-amz-date', all_headers['x-amz-date']);
 
-      console.log('USED-AUTH: '+  self.authHeader)
-
-
-      /**
-      for (var key in all_headers) {
-        if (all_headers.hasOwnProperty(key)) {
-          xhr.setRequestHeader(key, all_headers[key]);
-          console.log('USED-HEADER: ['+ key +'] : value:['+all_headers[key]+']') // time
-        }
-      }
-
-      xhr.setRequestHeader("x-amz-content-sha256", 'UNSIGNED-PAYLOAD');
-
-      self.signer.setHeaders(xhr);  // playload content sha
-
-    //  if (self.request.contentType) {
-    //    xhr.setRequestHeader('Content-Type', self.request.contentType);
-    //     console.log('Content-Type: '+ self.request.contentType)
-    //   }
-
-    //  if (self.request.md5_digest) {
-    //    xhr.setRequestHeader('Content-MD5', self.request.md5_digest);
-    //    console.log('Content-MD5: '+ self.request.md5_digest)
-    //  }
-    **/
-
       xhr.onerror = function (xhr) {
         var reason = xhr.responseText ? getAwsResponse(xhr) : 'transport error';
         reject(reason);
@@ -1185,7 +1155,7 @@
 
       self.getPayload()
           .then(xhr.send.bind(xhr), reject);
-          console.log('REQUEST SEND!!!')
+
 
 
       setTimeout(function () { // We have to delay here or Safari will hang
