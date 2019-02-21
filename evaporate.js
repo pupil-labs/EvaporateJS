@@ -1115,8 +1115,8 @@
         url += self.request.query_string;
         console.log('USED-URL: '+ url)
       }
-     // extend(all_headers, self.request.not_signed_headers);
-     // extend(all_headers, self.request.x_amz_headers);
+     extend(all_headers, self.request.not_signed_headers);
+     extend(all_headers, self.request.x_amz_headers);
 
       xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
