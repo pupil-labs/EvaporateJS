@@ -1121,15 +1121,13 @@
       xhr.onreadystatechange = function () {
 
         if (xhr.readyState === 4) {
-          console.log('SOMETHING WORKED!!!')
 
           if (self.success_status(xhr)) {
-            console.log('SOMETHING WORKED EVEN BETTER!!!')
             if (self.request.response_match &&
                 xhr.response.match(new RegExp(self.request.response_match)) === undefined) {
               reject('AWS response does not match set pattern: ' + self.request.response_match);
             } else {
-              console.log('REQUEST WAS SUCESSFULL!!!')
+              console.log('INITIALIZING UPLOAD SUCESSFULL!')
               resolve();
             }
           } else {
@@ -1201,35 +1199,36 @@
       return this.signer.getPayload()
       .then(function () {
         var self = this
-        var type,upload_id,part_nr
+        var type = null
+        var eTags = []
+        var upload_id = null
+        var part_nr = null
         if  (this instanceof InitiateMultipartUpload){
           type = 'init_upload'
-          upload_id = null
-          part_nr = null
         }
         else if(this instanceof PutPart){
           type = 'upload_part'
           upload_id = this.fileUpload.uploadId
           part_nr = this.partNumber
-
         }
         else if(this instanceof CompleteMultipartUpload){
           type = 'finish_upload'
           upload_id = this.fileUpload.uploadId
-          part_nr = null
+          this.fileUpload.partsOnS3.forEach(part=>{
+            let part_nr = part.partNumber
+            eTags.splice(part_nr,0,part.eTag)
+          })
         }
         else if(this instanceof ResumeInterruptedUpload){
           type = 'resume_upload'
           upload_id = this.fileUpload.uploadId
-          part_nr = null
         }
         else if(this instanceof DeleteMultipartUpload){
           type = 'delete_upload'
           upload_id = this.fileUpload.uploadId
-          part_nr = null
         }
         return new Promise(function (resolve, reject) {
-          authorizationMethod(self).authorize(type,upload_id,part_nr).then(function(auth_object){
+          authorizationMethod(self).authorize(type,upload_id,part_nr,eTags).then(function(auth_object){
             var signature = auth_object.signature
             var x_amz_date = auth_object.x_amz_date
             self.authHeader = auth_object.authorization_header
@@ -1260,8 +1259,8 @@
             },
             self.error.bind(self));
   };
-  SignedS3AWSRequest.prototype.send = function (type) {
-    this.trySend(type);
+  SignedS3AWSRequest.prototype.send = function () {
+    this.trySend();
     return this.awsDeferred.promise;
   };
 
@@ -1982,9 +1981,9 @@
       AuthorizationMethod.call(this);
     }
     AuthorizationCustom.prototype = Object.create(AuthorizationMethod.prototype);
-    AuthorizationCustom.prototype.authorize = function (request_type, upload_id, part_nr) {
+    AuthorizationCustom.prototype.authorize = function (request_type, upload_id, part_nr,eTags) {
       return new Promise(function (resolve, reject) {
-        con.customAuthMethod(request_type, upload_id, part_nr)
+        con.customAuthMethod(request_type, upload_id, part_nr,eTags)
           .then(function(auth_object){
             resolve(auth_object);
           },reject)
