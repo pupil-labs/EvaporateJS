@@ -1200,7 +1200,7 @@
       .then(function () {
         var self = this
         var type = null
-        var completion_payload = ""
+        var completion_payload = null
         var upload_id = null
         var part_nr = null
         if  (this instanceof InitiateMultipartUpload){
@@ -1216,7 +1216,6 @@
           upload_id = this.fileUpload.uploadId
           completion_payload = this.fileUpload.getCompletedPayload()
         }
-
 
         else if(this instanceof ResumeInterruptedUpload){
           type = 'resume_upload'
