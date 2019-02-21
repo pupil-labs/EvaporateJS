@@ -1115,11 +1115,10 @@
         url += self.request.query_string;
         console.log('USED-URL: '+ url)
       }
-      extend(all_headers, self.request.not_signed_headers);
-      extend(all_headers, self.request.x_amz_headers);
+     // extend(all_headers, self.request.not_signed_headers);
+     // extend(all_headers, self.request.x_amz_headers);
 
       xhr.onreadystatechange = function () {
-
         if (xhr.readyState === 4) {
 
           if (self.success_status(xhr)) {
@@ -1140,12 +1139,18 @@
 
       xhr.open(self.request.method, url);
       xhr.setRequestHeader('Authorization',self.authHeader);
-      xhr.setRequestHeader("x-amz-content-sha256", 'UNSIGNED-PAYLOAD');
-      xhr.setRequestHeader('x-amz-date', all_headers['x_amz_date']);
+      if (self instanceof InitiateMultipartUpload){
+        xhr.setRequestHeader("x-amz-content-sha256", self.signer.getPayloadSha256Content());  // hash of empty string
+      }
+      else{
+        xhr.setRequestHeader("x-amz-content-sha256", 'UNSIGNED-PAYLOAD');
+      }
+
+      xhr.setRequestHeader('x-amz-date', all_headers['x-amz-date']);
 
       console.log('USED-AUTH: '+  self.authHeader)
 
-      self.signer.getPayloadSha256Content()
+
       /**
       for (var key in all_headers) {
         if (all_headers.hasOwnProperty(key)) {
