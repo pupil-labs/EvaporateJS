@@ -1200,7 +1200,7 @@
       .then(function () {
         var self = this
         var type = null
-        var eTags = []
+        var completion_payload = ""
         var upload_id = null
         var part_nr = null
         if  (this instanceof InitiateMultipartUpload){
@@ -1214,11 +1214,10 @@
         else if(this instanceof CompleteMultipartUpload){
           type = 'finish_upload'
           upload_id = this.fileUpload.uploadId
-          this.fileUpload.partsOnS3.forEach(part=>{
-            let part_nr = part.partNumber
-            eTags.splice(part_nr,0,part.eTag)
-          })
+          completion_payload = this.fileUpload.getCompletedPayload()
         }
+
+
         else if(this instanceof ResumeInterruptedUpload){
           type = 'resume_upload'
           upload_id = this.fileUpload.uploadId
@@ -1228,7 +1227,7 @@
           upload_id = this.fileUpload.uploadId
         }
         return new Promise(function (resolve, reject) {
-          authorizationMethod(self).authorize(type,upload_id,part_nr,eTags).then(function(auth_object){
+          authorizationMethod(self).authorize(type,upload_id,part_nr,completion_payload).then(function(auth_object){
             var signature = auth_object.signature
             var x_amz_date = auth_object.x_amz_date
             self.authHeader = auth_object.authorization_header
