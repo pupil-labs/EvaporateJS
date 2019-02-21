@@ -1140,15 +1140,21 @@
 
       xhr.open(self.request.method, url);
       xhr.setRequestHeader('Authorization',self.authHeader);
-      //xhr.setRequestHeader('Authorization', self.signer.authorizationString())
+      xhr.setRequestHeader("x-amz-content-sha256", 'UNSIGNED-PAYLOAD');
+      xhr.setRequestHeader('x-amz-date', all_headers['x_amz_date']);
+
       console.log('USED-AUTH: '+  self.authHeader)
 
+      self.signer.getPayloadSha256Content()
+      /**
       for (var key in all_headers) {
         if (all_headers.hasOwnProperty(key)) {
           xhr.setRequestHeader(key, all_headers[key]);
           console.log('USED-HEADER: ['+ key +'] : value:['+all_headers[key]+']') // time
         }
       }
+
+      xhr.setRequestHeader("x-amz-content-sha256", 'UNSIGNED-PAYLOAD');
 
       self.signer.setHeaders(xhr);  // playload content sha
 
@@ -1161,6 +1167,7 @@
     //    xhr.setRequestHeader('Content-MD5', self.request.md5_digest);
     //    console.log('Content-MD5: '+ self.request.md5_digest)
     //  }
+    **/
 
       xhr.onerror = function (xhr) {
         var reason = xhr.responseText ? getAwsResponse(xhr) : 'transport error';
