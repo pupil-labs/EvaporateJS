@@ -1146,21 +1146,22 @@
       for (var key in all_headers) {
         if (all_headers.hasOwnProperty(key)) {
           xhr.setRequestHeader(key, all_headers[key]);
-          console.log('USED-HEADER: ['+ key +'] : value:['+all_headers[key]+']')
+          console.log('USED-HEADER: ['+ key +'] : value:['+all_headers[key]+']') // time
         }
       }
 
-      self.signer.setHeaders(xhr);
+      self.signer.setHeaders(xhr);  // playload content sha
 
-      if (self.request.contentType) {
-        xhr.setRequestHeader('Content-Type', self.request.contentType);
-        console.log('Content-Type: '+ self.request.contentType)
-      }
+    //  if (self.request.contentType) {
+    //    xhr.setRequestHeader('Content-Type', self.request.contentType);
+    //     console.log('Content-Type: '+ self.request.contentType)
+    //   }
 
-      if (self.request.md5_digest) {
-        xhr.setRequestHeader('Content-MD5', self.request.md5_digest);
-        console.log('Content-MD5: '+ self.request.md5_digest)
-      }
+    //  if (self.request.md5_digest) {
+    //    xhr.setRequestHeader('Content-MD5', self.request.md5_digest);
+    //    console.log('Content-MD5: '+ self.request.md5_digest)
+    //  }
+
       xhr.onerror = function (xhr) {
         var reason = xhr.responseText ? getAwsResponse(xhr) : 'transport error';
         reject(reason);
